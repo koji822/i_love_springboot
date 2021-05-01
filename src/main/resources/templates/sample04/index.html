@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/github.min.css">
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">				
+		<div class="starter-template">
+		
+	        <h1>Spring Batch</h1><br/>	        
+			<p><strong>1. @EnableSchedulingアノテーション</strong></p>
+			<p>スケジュールを有効にするために@EnableSchedulingアノテーションを追加します。</p>
+					
+			<pre>
+				<code>
+package jp.co.commerce21;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class SpringBootApp01Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringBootApp01Application.class, args);
+	}
+}
+				</code>
+			</pre>
+			<br/>
+
+			<p><strong>2. @Scheduledアノテーション</strong></p>
+			<p>実行クラスを作成し、@Scheduledアノテーションを指定します。</p>
+			<pre>
+				<code>
+package jp.co.commerce21.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class Sample04BatchController {
+
+	private static final Logger logger = Logger.getLogger(Sample04BatchController.class);
+	
+	@Scheduled(cron = "0 0 * * * *", zone = "Asia/Tokyo")
+	public void batchCron() {
+		logger.info("-- Sample04BatchController batchCron begin --");	
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		logger.info("@@@@@ cron実行日時：" + sdf.format(new Date()) + " @@@@@");
+		
+		logger.info("-- Sample04BatchController batchCron end --");
+	}
+	
+	@Scheduled(cron = "${scheduler.cron}", zone = "Asia/Tokyo")
+	public void batchCronProperties() {
+		logger.info("-- Sample04BatchController batchCronProperties begin --");	
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		logger.info("@@@@@ cronProperties実行日時：" + sdf.format(new Date()) + " @@@@@");
+		
+		logger.info("-- Sample04BatchController batchCronProperties end --");
+	}
+	
+	@Scheduled(initialDelay = 60000, fixedDelay = 3600000)
+	public void batchFixedDelay() {
+		logger.info("-- Sample04BatchController batchFixedDelay begin --");	
+	
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		logger.info("##### FixedDelay実行日時：" + sdf.format(new Date()) + " #####");
+		
+		logger.info("-- Sample04BatchController batchFixedDelay end --");
+	}
+}
+				</code>
+			</pre>
+			<br/>
+
+			<p><strong>3. application.properties</strong></p>
+			<p>cronで${設定名}と指定した場合、application.propertiesに設定します。</p>
+			
+			<pre>
+				<code>
+## scheduler
+scheduler.cron=0 10 * * * *
+				</code>
+			</pre>
+			
+		</div>
+	</div><!-- /.container -->
+</body>
+</html>

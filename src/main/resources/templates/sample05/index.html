@@ -1,0 +1,249 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/github.min.css">
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">				
+		<div class="starter-template">
+		
+	        <h1>Spring REST API</h1><br/>	        
+			<p><strong>1. Maven dependency</strong></p>
+			<p>pom.xmlに以下を追加します。</p>
+			
+			<pre>
+				<code>
+　　・
+　　・		
+&lt;dependency&gt;
+	&lt;groupId>org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId>spring-boot-starter-data-rest&lt;/artifactId&gt;
+&lt;/dependency&gt;
+　　・
+　　・
+				</code>
+			</pre><br/>
+
+			<p><strong>2. Memberのリポジトリを作成</strong></p>
+			<p>JpaRepositoryを継承したMemberDaoインターフェースを作成します。</p>
+			<p>JpaRepositoryはPagingAndSortingRepositoryをextendsし、PagingAndSortingRepositoryはCrudRepositoryをextendsしています。</p>
+			<pre>
+				<code>
+package jp.co.commerce21.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Component;
+
+import jp.co.commerce21.entity.Member;
+
+@Component
+public interface MemberDao extends JpaRepository &lt;Member, Long&gt; {
+	
+	List&lt;Member&gt; findByInputText(@Param("inputText") String inputText);	
+	List&lt;Member&gt; findByEmailText(@Param("emailText") String emailText);
+}
+				</code>
+			</pre><br/>
+
+			<p><strong>3. application.properties</strong></p>
+			<p>色々な設定をapplication.propertiesでできます。</p>
+			
+			<pre>
+				<code>
+　　・
+　　・
+## REST API
+spring.data.rest.basePath=/sample05/api
+spring.data.rest.defaultPageSize=20
+spring.data.rest.pageParamName=page
+spring.data.rest.limitParamName=size
+spring.data.rest.sortParamName=sort
+spring.data.rest.returnBodyOnCreate=true
+spring.data.rest.returnBodyOnUpdate=true
+　　・
+　　・
+				</code>
+			</pre><br/>
+
+<p><strong>4. REST API確認</strong></p>
+<p>上記で作成したAPIを確認してみます。</p>
+<pre>
+	<code>
+// Memberを全件取得
+<a href="http://localhost:8080/sample05/api/members">http://localhost:8080/sample05/api/members</a>
+
+// MemberのmemberIdが1のデータを取得
+<a href="http://localhost:8080/sample05/api/members/1">http://localhost:8080/sample05/api/members/1</a>
+
+// Memberにsize,page,sortを指定して取得
+<a href="http://localhost:8080/sample05/api/members?page=2&size=5&sort=upDm,desc">http://localhost:8080/sample05/api/members?page=2&size=5&sort=upDm,desc</a>
+
+※その他、新規登録、更新、削除についても可能です。（ここでは省略）
+	</code>
+</pre><br/>
+
+<p><strong>5. カスタマイズしたい場合</strong></p>
+<p>好きな条件で情報を取得したい場合は、REST API（標準API）を使用せず、自分自身で実装します。</p>
+<p><i>5.1 カスタム用MemberDaoインターフェースを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import jp.co.commerce21.entity.Member;
+import jp.co.commerce21.form.SearchForm;
+
+@Component
+public interface MemberDaoCustom {
+	
+	public List&lt;Member&gt; findByInputTextAndEmailText(String inputText, String emailText);
+}
+	</code>
+</pre><br/>
+			
+<p><i>5.2 カスタム用MemberDaoインターフェースの実装クラスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.dao.impl;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import jp.co.commerce21.dao.MemberDaoCustom;
+import jp.co.commerce21.entity.Member;
+import jp.co.commerce21.form.SearchForm;
+
+@Component
+public class MemberDaoCustomImpl implements MemberDaoCustom {
+
+	@Autowired
+	EntityManager manager;
+	@Override
+	public ListList&lt;Member&gt; findByInputTextAndEmailText(String inputText, String emailText) {
+		
+	    // TODO JPQLでinputTextとemailTextを条件にデータを取得する
+		
+	    Query query = manager.createQuery("JPQLを記述");	    
+	    return query.getResultList();
+	}
+}
+	</code>
+</pre><br/>
+
+<p><i>5.3 RESTコントローラクラスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.controller;
+
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import jp.co.commerce21.entity.Member;
+import jp.co.commerce21.service.MemberService;
+
+@RestController
+@RequestMapping("/sample05/api/member")
+public class Sample05RestApiMemberController {
+
+	private static final Logger logger = Logger.getLogger(Sample05RestApiMemberController.class);
+
+	@Autowired
+	private MemberService memberService;
+	@GetMapping(path = "/custom")
+	public List&lt;Member&gt; getCustom(@RequestParam String inputText, String emailText) {
+		return memberService.findByCustom(inputText, emailText);
+	}
+}
+	</code>
+</pre><br/>
+			
+<p><i>5.4 MemberServiceインターフェイスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.service;
+
+import java.util.List;
+
+import jp.co.commerce21.entity.Member;
+
+public interface MemberService {
+	public List&lt;Member&gt; findByCustom(String inputText, String emailText);
+}
+	</code>
+</pre><br/>
+			
+<p><i>5.5 MemberServiceインターフェイスの実装クラスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.service.impl;
+
+import java.util.List;
+import javax.transaction.Transactional;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import jp.co.commerce21.dao.MemberDao;
+import jp.co.commerce21.dao.MemberDaoCustom;
+import jp.co.commerce21.entity.Member;
+import jp.co.commerce21.service.MemberService;
+
+@Service
+@Transactional
+public class MemberServiceImpl implements MemberService {
+
+	private static final Logger logger = Logger.getLogger(MemberServiceImpl.class);
+	
+	@Autowired
+	private MemberDao memberDao;
+	
+	@Autowired
+	private MemberDaoCustom memberDaoCustom;
+
+	@Override
+	public List&lt;Member&gt; findByCustom(String inputText, String emailText) {
+		return memberDaoCustom.findByInputTextAndEmailText(inputText, emailText);
+	}
+}
+	</code>
+</pre><br/>
+
+<p><strong>6. カスタマイズ版REST API確認</strong></p>
+<p>上記で作成したAPIを確認してみます。</p>
+<pre>
+	<code>
+// MemberのinputTextとemailTextをANDでLIKE検索
+<a href="http://localhost:8080/sample05/api/member/custom?inputText=TEST&emailText=gmail.com">http://localhost:8080/sample05/api/member/custom?inputText=TEST&emailText=gmail.com</a>
+	</code>
+</pre><br/>
+				
+		</div>
+	</div><!-- /.container -->
+</body>
+</html>

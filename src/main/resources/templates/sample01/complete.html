@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">
+	    <div class="page-header">
+	     <h1><span th:text="${title}"></span></h1>
+	    </div>
+	
+	    <div class="row">	
+			<div class="col-md-12">
+				<div class="alert alert-success" role="alert">登録・更新処理が正常に完了しました。</div>
+			</div>
+	    </div>
+	    <br />
+	    <div>
+	        <p class="text-center"><a href="/sample" class="btn btn-default" role="button">TOPへ戻る</a></p>
+		</div>
+	</div>
+	
+</body>
+</html>

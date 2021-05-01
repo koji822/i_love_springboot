@@ -1,0 +1,399 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/github.min.css">
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">				
+		<div class="starter-template">
+		
+	        <h1>Spring Security（認証）</h1><br/>	
+	        <p>
+	        ここでは、SpringSecurityを使用してログイン認証（DB認証）を行うためのサンプルを記述してます。
+	        DBはローカル環境のMySQLを利用しているため、別途、MySQLの構築が必要になります。
+	        ログインページについては、ここでは自前のログインページは作成しておらず、SpringSecurityで用意されているログインページを利用してますが、
+	        時間あればログインページも自前に修正したいと思ってます。。が、面倒臭いので後回し中！！
+	        </p>     
+			<p><strong>1. Maven dependency</strong></p>
+			<p>pom.xmlに以下を追加します。</p>
+			
+			<pre>
+				<code>
+　　・
+　　・		
+&lt;dependency&gt;
+	&lt;groupId>org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId>spring-boot-starter-security&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+	&lt;groupId>org.thymeleaf.extras&lt;/groupId&gt;
+	&lt;artifactId>thymeleaf-extras-springsecurity5&lt;/artifactId&gt;
+&lt;/dependency&gt;
+　　・
+　　・
+				</code>
+			</pre><br/>
+
+			<p><strong>2. Security用Configクラスを作成</strong></p>
+			<p>抽象クラスとなるWebSecurityConfigurerAdapterを継承したWebSecurityConfigクラスを作成します。</p>
+			<p>Spring Security認証・認可の設定まわりをこのクラスで定義します。</p>
+			<pre>
+				<code>
+package jp.co.commerce21.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	@Autowired
+	private UserDetailsService userDetailsService;
+	
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+	
+		http.authorizeRequests()
+			.anyRequest().authenticated()
+			.and()
+			.formLogin()
+			.defaultSuccessUrl("/success").permitAll();
+		
+		http
+			.csrf().ignoringAntMatchers("/sample03/**");
+	}
+	
+	@Autowired
+	protected void configureAuthenticationManager(AuthenticationManagerBuilder auth) throws Exception {		
+		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());		
+	}
+	
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+}
+	</code>
+</pre><br/>
+
+<p><strong>3. application.properties</strong></p>
+<p>DBの設定をapplication.propertiesに記載します。</p>
+
+<pre>
+	<code>
+　　・
+　　・
+## Database
+spring.datasource.url=jdbc:mysql://localhost:3306/databasename?useSSL=false
+spring.datasource.username=username
+spring.datasource.password=password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.hibernate.ddl-auto=update
+　　・
+　　・
+## Session time out
+server.session.timeout=3600
+server.session.cookie.max-age=3600
+　　・
+　　・
+				</code>
+			</pre><br/>
+
+<p><strong>4. 認証後のページを作成</strong></p>
+<p>ログイン認証で成功した際のページを作成します。</p>
+<pre>
+	<code>
+&lt;!DOCTYPE HTML&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org"&gt;
+&lt;head&gt;
+&lt;title&gt;Topページ&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="text-center"&gt;
+&lt;h1&gt;Hello World!!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+	</code>
+</pre><br/>
+
+<p><strong>5. コントローラを作成</strong></p>
+<p>ログインページ用とトップページ用のコントローラを作成します。</p>
+<pre>
+	<code>
+package jp.co.commerce21.controller;
+
+import java.util.Map;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+/**
+ * Loginページ用コントローラクラス
+ *
+ */
+@Controller
+public class LoginController {
+	
+	@RequestMapping(value = "/login", method = RequestMethod.GET)
+	public String login(Map<String, Object> model) {
+		 model.put("iserror", false);
+		 return "login";
+	}
+	
+	@RequestMapping(value = "/login-error", method = RequestMethod.GET)
+	public String loginError(Map<String, Object> model) {
+		 model.put("iserror", true);
+		 return "login";
+	}
+	
+	@RequestMapping(value = "/success", method = RequestMethod.GET)
+	public String success(Authentication loginUser, Model model) {
+		// 認証情報を取得
+        model.addAttribute("username", loginUser.getName());
+        model.addAttribute("role", loginUser.getAuthorities());
+        return "redirect:/sample";
+	}
+}
+	</code>
+</pre><br/>
+
+<pre>
+	<code>
+package jp.co.commerce21.controller;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+/**
+ * Topページ用コントローラクラス
+ *
+ */
+@Controller
+public class TopController {
+	
+	@Value("${top.title}")
+	private String title;
+	
+	@RequestMapping(value="/", method=RequestMethod.GET)
+	public String top(Map<String, Object> model) {
+		return "redirect:/sample";
+	}
+	
+	@RequestMapping(value="/sample", method=RequestMethod.GET)
+	public String sample(Map<String, Object> model) {
+		model.put("title", this.title);
+		return "top";
+	}
+}
+	</code>
+</pre><br/>	
+	
+<p><i>6. エンティティクラスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name="tuser")
+public class User {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name="user_id")
+	private Long userId;	
+	
+	@Column(name="username", length=20, nullable=false, unique = true)
+	private String username;
+	
+	@Column(name="password", length=100, nullable=false)
+	private String password;
+	
+	@Column(nullable = false)
+    private boolean enabled;
+	
+	@Column(nullable = false)
+    private boolean admin;	
+}
+	</code>
+</pre><br/>
+
+<p><i>7. Userエンティティを操作するRepository（UserDao）インターフェイスを作成します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.dao;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
+
+import jp.co.commerce21.entity.User;
+
+@Component
+public interface UserDao extends JpaRepository <User, Integer> {	
+	public User findByUsername(String username);
+}
+	</code>
+</pre><br/>
+			
+<p><i>8. Userクラスを利用して、UserDetailsインターフェースを実装します。</i></p>
+<p><i>isAccountNonExpired()、 isAccountNonLocked()、isCredentialsNonExpired()　の３つはAccountテーブルにも持たず、単にTrueを返すだけにしてます。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.entity;
+
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+public class UserAccount implements UserDetails {
+
+	private static final long serialVersionUID = 1L;
+
+	private User user;
+	private Collection<GrantedAuthority> authorities;
+		
+	protected UserAccount(){}
+	
+	public UserAccount(User account, Collection<GrantedAuthority> authorities){
+		this.user = account;
+		this.authorities = authorities;		
+	}	
+	
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return this.authorities;
+	}
+
+	@Override
+	public String getPassword() {
+		return user.getPassword();
+	}
+
+	@Override
+	public String getUsername() {
+		return user.getUsername();
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return user.isEnabled();
+	}
+}
+	</code>
+</pre><br/>
+			
+<p><i>9. UserDetailsServiceインタフェースを実装します。</i></p>
+<pre>
+	<code>
+package jp.co.commerce21.service.impl;
+
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
+
+import jp.co.commerce21.dao.UserDao;
+import jp.co.commerce21.entity.User;
+import jp.co.commerce21.entity.UserAccount;
+
+@Service
+public class UserAccountService implements UserDetailsService {
+
+	@Autowired
+	private UserDao userDao;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// usernameの値チェック
+		if (StringUtils.isEmpty(username)) {
+			throw new UsernameNotFoundException("Username is empty");
+		}
+
+		// usernameの取得
+		User user = userDao.findByUsername(username);
+		if (user == null) {
+			throw new UsernameNotFoundException("User not found: " + username);
+		}
+
+		if (!user.isEnabled()) {
+			throw new UsernameNotFoundException("User not enabled: " + username);
+		}
+
+		// ユーザー情報を生成
+		UserAccount userAccount = new UserAccount(user, getAuthorities(user));
+		return userAccount;
+	}
+
+	private Collection<GrantedAuthority> getAuthorities(User user) {
+		if (user.isAdmin()) {
+			return AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_USER");
+		} else {
+			return AuthorityUtils.createAuthorityList("ROLE_USER");
+		}
+	}
+}
+	</code>
+</pre><br/>
+				
+		</div>
+	</div><!-- /.container -->
+</body>
+</html>

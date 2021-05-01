@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.3.7/css/bootstrap.min.css" />
+<link rel="stylesheet" th:href="@{/css/main.css}" href="../../css/main.css" />
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">
+	    <div class="page-header">
+	     <h1>System Error</h1>
+	    </div>
+	
+	    <div class="row">	
+			<div class="col-md-12">
+				<div class="alert alert-danger" role="alert">500 Internal Server Error.</div>
+			</div>
+	    </div>
+	    <br />
+	    <div>
+	        <p class="text-center"><a href="/sample" class="btn btn-default" role="button">TOPへ戻る</a></p>
+		</div>
+	</div>
+
+	<footer class="footer">
+		<div class="container">
+	    	<!-- debug mode -->
+			<table th:if="${#arrays.contains(@environment.getActiveProfiles(),'dev')}" class="table table-striped table-bordered">
+				<tr>
+					<th>properties</th><td><a href="/debug/appconf">プロパティファイル</a></td>
+				</tr>
+				<tr>
+					<th>Status</th><td th:text="${status}"></td>
+				</tr>
+				<tr>
+					<th>Error</th><td th:text="${error}"></td>
+				</tr>
+				<tr>
+					<th>Exception</th><td th:text="${exception}"></td>
+				</tr>
+				<tr>
+					<th>Message</th><td th:text="${message}"></td>
+				</tr>
+				<tr th:if="${trace}">
+					<th>Trace</th><td><pre th:text="${trace}"></pre></td>
+				</tr>
+			</table>
+		</div>
+	</footer>
+
+</body>
+</html>

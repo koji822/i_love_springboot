@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+</head>
+<script>
+/*<![CDATA[*/
+jQuery(function($) {
+	$(document).ready( function(){
+		$("#upload_rs").css("display", "none");
+		$("#pdf_dl_button").prop("disabled", true);
+	});
+	function setProgress(p) {
+		$('.progress-bar').css('width', p + '%').attr('aria-valuenow', p);
+		$('.progress-bar').text(p + '%');
+	}
+	$("#upload_button").click(function() {
+		if (typeof files != "undefined") {
+			var fileName = files[0].name.slice(-3);
+			if (fileName == "csv" || fileName == "CSV") {
+				uploadFile();
+			} else {
+				$("#upload_rs").toggle(true);
+				$("#upload_rs").removeClass("alert alert-success").addClass("alert alert-danger");
+				$('#upload_rs_message').html("csvファイルを選択してください");
+			}
+		} else {
+			$("#upload_rs").toggle(true);
+			$("#upload_rs").removeClass("alert alert-success").addClass("alert alert-danger");
+			$('#upload_rs_message').html("csvファイルを選択してください");
+		}
+	});
+	$("#file").on('change', getFile);
+	var files;
+	function getFile(event) {
+		files = event.target.files;
+		percent = 0;
+		setProgress(percent);
+		$("#upload_rs").css("display", "none");
+	}
+	function uploadFile() {
+		$("#loading").html("<img src='/img/gif-load.gif'/><p>アップロード中です。少々お待ちください</p>");
+		$("#upload_button").prop("disabled", true);
+//		alert("uploadFile() start");
+		var fd = new FormData();
+		fd.append("file", files[0]);
+		$.ajax({
+			dataType : 'json',
+			url : "importCsv",
+			async: true,
+			data : fd,
+			type : "POST",
+			enctype : 'multipart/form-data',
+			processData : false,
+			contentType : false,
+			xhr : function() {
+//				var xhr = new window.XMLHttpRequest();
+				var xhr = $.ajaxSettings.xhr();
+				//Upload progress
+				xhr.upload.addEventListener("progress", function(evt) {
+					if (evt.lengthComputable) {
+						var p = evt.loaded / evt.total;
+//						alert("evt.loaded:" + evt.loaded);
+//						alert("evt.total:" + evt.total);
+//						alert("setProgress:" + Math.round(p * 100));
+						setProgress(Math.round(p * 100));
+					}
+				}, false);
+				return xhr;
+			},
+			success : function(response) {
+				if (response == "success") {
+					setProgress(100);
+					$("#upload_rs").toggle(true);
+					$("#upload_rs").removeClass("alert alert-danger").addClass("alert alert-success");			
+					$('#upload_rs_message').html("アップロードが正常に完了しました");
+				} else {
+					setProgress(0);
+					$("#upload_rs").toggle(true);
+					$("#upload_rs").removeClass("alert alert-success").addClass("alert alert-danger");
+					$('#upload_rs_message').html("アップロードに失敗しました　[500]");
+				}
+			},
+			error : function(response) {
+				percent = 0;
+				setProgress(percent);
+				$("#upload_rs").toggle(true);
+				$("#upload_rs").removeClass("alert alert-success").addClass("alert alert-danger");
+				$('#upload_rs_message').html("アップロードに失敗しました　[500]");
+			},
+			complete: function(response) {
+				$("#loading").empty();
+				$("#upload_button").prop("disabled", false);
+            }
+		});
+	}
+	$(document).on('change', ':file', function() {
+	    var input = $(this),
+	    numFiles = input.get(0).files ? input.get(0).files.length : 1,
+	    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+	    input.parent().parent().next(':text').val(label);
+	});
+});
+/*]]>*/
+</script>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">			
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				ダウンロード機能
+			</div>
+			<div class="panel-body">
+				<div class="control-group">
+					<form th:action="@{/sample03/csvDownload}" method="post" class="form-horizontal">
+		                <label class="control-label">
+							<input type="submit" value="CSVダウンロード" class="btn btn-primary" id="csv_dl_button" />
+						</label>
+					</form>
+					<form th:action="@{/sample03/pdfDownload}" method="post" class="form-horizontal">
+		                <label class="control-label">
+							<input type="submit" value="帳票ダウンロード" class="btn btn-primary" id="pdf_dl_button" /> ※準備中
+						</label>
+	            	</form>
+	            </div>
+			</div>
+		</div><br />
+		
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				アップロード機能
+			</div>
+			<div class="panel-body">					
+				<div class="control-group">
+				
+					<div id="upload_rs" class="alert-dismissible fade in" role="alert">
+						<div id="upload_rs_message"></div>
+					</div>
+	                
+	                <input id="lefile" type="file" style="display:none">
+	                
+	                <div class="input-group">
+					    <label class="input-group-btn">
+					        <span class="btn btn-primary">
+								ファイル選択<input type="file" name="file" id="file" style="display:none">
+					        </span>
+					    </label>
+					    <input type="text" class="form-control" readonly="readonly" placeholder="select file...">
+					</div>
+	                
+	                <div><p></p></div>
+	                <label class="control-label">
+						<input type="button" id="upload_button" value="　アップロード　" class="btn btn-primary" />
+					</label>
+	            	<div><p></p></div>     
+
+					<div id="loading"></div>
+
+<!-- 				
+					<div class="progress">
+						<div class="progress-bar progress-bar-success" role="progressbar" style="width: 0%;">
+							<span class="sr-only">0%</span>
+						</div>
+					</div>
+ -->
+ 
+	                <div class="controls">
+						<h4><b>郵便番号マスタを以下の手順で更新します。</b></h4>
+						1.&nbsp;日本郵便の<a href="http://www.post.japanpost.jp/zipcode/dl/kogaki-zip.html" target="_blank"> WEB サイト</a>から、郵便番号CSVを取得します。<br />
+						2.&nbsp;アップロード選択より、取得した郵便番号CSVを選択します。<br />
+						3.&nbsp;アップロードボタンをクリックし、郵便番号CSVを郵便番号マスタに登録します。<br />
+						※郵便番号csvのデータ形式は<a href="http://www.post.japanpost.jp/zipcode/dl/readme.html" target="_blank">こちら</a>
+	                </div>
+	            	
+	            </div>					
+			</div>
+		</div>
+		
+	</div><!-- /.container -->
+
+</body>
+</html>

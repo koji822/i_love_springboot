@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+</head>
+<body>
+    <div th:replace="/common/common::header"></div>
+    <div class="container">      	
+   		<div th:if="${del}" class="alert alert-success alert-dismissible fade in" role="alert">
+			<button type="button" class="close" data-dismiss="alert">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			削除処理が正常に完了しました。
+		</div>
+    
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">検索条件</div>
+            </div>
+            <div class="panel-body">
+            
+            	<form class="form-horizontal" action="/sample02/list" th:action="@{/sample02/list}" th:object="${searchForm}" role="form" method="post">         
+                    <div class="form-group">
+                        <label for="code" class="control-label col-sm-2">Id</label>
+                        <div class="col-sm-2">
+                            <input type='text' id="id" name="id" th:field="*{id}" placeholder="例） 1111" class="form-control input-sm" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name" class="control-label col-sm-2">Text</label>
+                        <div class="col-sm-4">
+                        	<input type='text' id="text" name="text" th:field="*{text}" placeholder="例） TEXT" class="form-control input-sm" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="continent" class="control-label col-sm-2">Email</label>
+                        <div class="col-sm-4">
+                        	<input type='text' id="email" name="email" th:field="*{email}" placeholder="例） test@gmail.com" class="form-control input-sm" />
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" value="検索" class="btn btn-primary">検索</button>
+                        <button type="reset" value="クリア" class="btn btn-default">クリア</button>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+
+		<!-- pager begin -->
+        <div class="text-center">
+            <ul class="pagination">
+                <li th:class="${page.hasPrev()} ? '':'disabled'" style="display:inline" >
+                	<span th:if="${not page.hasPrev()}">&laquo;</span>
+                	<a  th:if="${page.hasPrev()}" th:href="@{${url}(page=(${page.prevPage()}))}">&laquo;</a>
+                </li>
+            </ul>          
+            <ul class="pagination">
+                <li th:each='i : ${#numbers.sequence(0, page.lastPage()-1)}' class="(${i}==${page.currentPage()-1})? 'active' : ''" style="display:inline">
+                	<span th:if='${i}==${page.currentPage()-1}' th:text='${i+1}'>1</span>
+                	<a th:if='${i}!=${page.currentPage()-1}' th:href="@{${url}(page=${i+1})}" >
+                		<span th:text='${i+1}'>1</span>
+                	</a>
+                </li>
+            </ul>
+            <ul class="pagination">
+            	<li th:class="${page.hasNext()} ? '':'disabled'" style="display:inline" >
+                	<span th:if="${not page.hasNext()}">&raquo;</span>
+                	<a th:if="${page.hasNext()}" th:href="@{${url}(page=(${page.nextPage()}))}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+		<!-- pager end -->
+
+        <table class="table table-condensed table-bordered table-striped">
+            <tr class="info">
+                <th>Id</th>
+                <th>Text</th>
+                <th>Email</th>
+                <th>Reg Date</th>
+                <th>Up Date</th>
+                <th>編集</th>
+                <th>削除</th>
+            </tr>
+            <tr th:each="member:${members}">
+			    <td th:text="${member.id}">1111</td>
+			    <td th:text="${member.text}">TEXT</td>		
+			    <td th:text="${member.email}">test@commerce21.co.jp</td>
+			    <td th:text="${member.regDate}" width="170">1970/01/01 00:00:00</td>
+			    <td th:text="${member.upDate}" width="170">1970/01/01 00:00:00</td>
+			    <td width="80">
+			    	<a th:href="@{'/sample01/input/{id}'(id=${member.id})}" class="btn btn-info" role="button">編集</a>
+			    </td>
+			    <td width="80">
+			    	<button type="button" class="btn btn-default" data-toggle="modal" data-target="#delModal" th:data-id="${member.id}">削除</button>
+			    </td>
+			</tr>
+        </table>	
+       
+        
+        <!-- モーダル・削除ダイアログ -->
+		<div class="modal fade" id="delModal" tabindex="-1">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+						<h4 class="modal-title">削除</h4>
+					</div>
+					<div class="modal-body">
+						<div><strong>ID:<span class="member_id">ID</span></strong> を削除します。</div>
+						<div>本当によろしいでしょうか。</div>
+					</div>
+					<form class="form-horizontal" action="/sample02/delete" th:action="@{/sample02/delete}" role="form" method="post">
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">やめる</button>
+							<button type="submit" class="btn btn-primary">削除する</button>							
+							<input type="hidden" name="id" id="member_id" />
+						</div>
+					</form>
+				</div>
+			</div>			
+		</div>
+
+        <!-- pager begin -->
+        <div class="text-center">
+            <ul class="pagination">
+                <li th:class="${page.hasPrev()} ? '':'disabled'" style="display:inline" >
+                	<span th:if="${not page.hasPrev()}">&laquo;</span>
+                	<a  th:if="${page.hasPrev()}" th:href="@{${url}(page=(${page.prevPage()}))}">&laquo;</a>
+                </li>
+            </ul>          
+            <ul class="pagination">
+                <li th:each='i : ${#numbers.sequence(0, page.lastPage()-1)}' class="(${i}==${page.currentPage()-1})? 'active' : ''" style="display:inline">
+                	<span th:if='${i}==${page.currentPage()-1}' th:text='${i+1}'>1</span>
+                	<a th:if='${i}!=${page.currentPage()-1}' th:href="@{${url}(page=${i+1})}" >
+                		<span th:text='${i+1}'>1</span>
+                	</a>
+                </li>
+            </ul>
+            <ul class="pagination">
+            	<li th:class="${page.hasNext()} ? '':'disabled'" style="display:inline" >
+                	<span th:if="${not page.hasNext()}">&raquo;</span>
+                	<a  th:if="${page.hasNext()}" th:href="@{${url}(page=(${page.nextPage()}))}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+		<!-- pager end -->
+		
+    </div>
+<script type="text/javascript">
+/*<![CDATA[*/
+$('#delModal').on('show.bs.modal', function (event) {
+    var recipient = $(event.relatedTarget).data('id');
+    var modal = $(this);
+    modal.find('.member_id').text(recipient);
+    $("#member_id").val(recipient);
+});
+/*]]>*/
+</script>
+<script type="text/javascript">
+/*<![CDATA[*/
+$(document).ready(function() {
+    $('#code').focus();
+});
+/*]]>*/
+</script>
+</body>
+</html>
