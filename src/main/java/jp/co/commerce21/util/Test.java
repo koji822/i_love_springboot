@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 /**
  * テスト用クラス
  * @author Koji
+ * 
  */
 public class Test {
 	public static void main(String[] args) {
