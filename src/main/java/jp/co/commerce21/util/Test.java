@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * テスト用クラス
- * @author yamagishikouji
+ * @author Koji 
  *
  */
 public class Test {
