@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+</head>
+<body>
+    <div th:replace="/common/common::header"></div>
+    <div class="container">      	
+   		<div th:if="${del}" class="alert alert-success alert-dismissible fade in" role="alert">
+			<button type="button" class="close" data-dismiss="alert">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			削除処理が正常に完了しました。
+		</div>
+    
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">検索条件</div>
+            </div>
+            <div class="panel-body">
+            
+            	<form class="form-horizontal" action="/sample09/list" th:action="@{/sample09/list}" th:object="${searchForm}" role="form" method="post">         
+           			
+           			<div class="form-group">
+                        <label for="code" class="control-label col-sm-2">商品No</label>
+                        <div class="col-sm-2">
+                            <input type='text' id="goodsNo" name="goodsNo"  placeholder="例） 1111" class="form-control input-sm" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name" class="control-label col-sm-2">商品名</label>
+                        <div class="col-sm-4">
+                        	<input type='text' id="name" name="name"  placeholder="例） MacBook Pro" class="form-control input-sm" />
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" value="検索" class="btn btn-primary">検索</button>
+                        <button type="reset" value="クリア" class="btn btn-default">クリア</button>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+
+        <table class="table table-condensed table-bordered table-striped">
+            <tr class="info">
+                <th>goods_no</th>
+                <th>goods_name</th>
+                <th>goods_display</th>
+                <th>goods_ability</th>
+                <th>goods_memory</th>
+                <th>goods_storage</th>
+                <th>goods_battery</th>
+                <th>goods_attributes</th>
+                <th>goods_stock</th>
+            </tr>
+            <tr th:each="goods:${goodsList}">
+			    <td th:text="${goods.goodsNo}">1111</td>
+			    <td th:text="${goods.name}">TEST</td>		
+			    <td th:text="${goods.display}">TEST</td>
+			    <td th:text="${goods.ability}">TEST</td>
+			    <td th:text="${goods.memory}">TEST</td>
+			    <td th:text="${goods.storage}">TEST</td>
+			    <td th:text="${goods.battery}">TEST</td>
+			    <td th:text="${goods.attributes}">TEST</td>
+			    <td th:text="${goods.stock}">10</td>
+			</tr>
+        </table>
+    </div>
+</body>
+</html>
