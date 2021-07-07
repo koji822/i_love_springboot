@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import jp.co.commerce21.dto.GoodsDto;
 import jp.co.commerce21.form.SearchForm;
+import jp.co.commerce21.form.SearchGoodsForm;
 import jp.co.commerce21.service.GoodsService;
 
 /**
@@ -29,14 +30,14 @@ public class Sample09ListController {
 	 * @return
 	 */
 	@RequestMapping(value="/sample09/list")
-	public String list(ModelMap model, SearchForm searchForm, Pageable pageable) {
+	public String list(ModelMap model, SearchGoodsForm sgForm, Pageable pageable) {
 		// ページ処理
 //		int page = pageable.getPageNumber() == 0 ? 1 : pageable.getPageNumber();
 //		int count = memberService.searchMemberListCount(searchForm);
 //		Pager pager = new Pager(pageable.getPageSize(), count, page);
 		
 		// 一覧情報の取得
-		List<GoodsDto> goodsList = goodsService.searchGoodsList(searchForm);
+		List<GoodsDto> goodsList = goodsService.searchGoodsList(sgForm);
 		
 		model.addAttribute("goodsList", goodsList);
 //		model.addAttribute("page", pager);

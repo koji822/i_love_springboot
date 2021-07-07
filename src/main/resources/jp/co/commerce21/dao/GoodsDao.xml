@@ -3,30 +3,57 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="jp.co.commerce21.dao.GoodsDao">
-    <select id="searchGoods" resultType="jp.co.commerce21.entity.Goods">
-select 
-	goods.goods_no, goods.goods_name, goods.goods_display, goods.goods_ability, 
-	goods.goods_memory, goods.goods_storage, goods.goods_battery, attr.attributes, goods.stock_cnt
-from
-	(
-    select
-		tg.goods_no, goods_name, goods_display, goods_ability, goods_memory, goods_storage, goods_battery, ts.stock_cnt
-	from
-		tgoods as tg, tstock as ts
-	where tg.goods_no = ts.goods_no
-    ) as goods
-left join 
-	(
-    select
-		tag.goods_no, 
-        group_concat(ta.attribute_value) as attributes
-	from
-		tattributegoods as tag  left join tattribute  as ta
-	on 
-		tag.attribute_id = ta.attribute_id
-    group by 
-		goods_no
-	) as attr
-on goods.goods_no = attr.goods_no;
+    <select id="searchGoods" parameterType="jp.co.commerce21.form.SearchGoodsForm" 
+    		resultType="jp.co.commerce21.entity.Goods" resultMap="goods_list">
+    <![CDATA[
+		select 
+			goods.goods_no, goods.goods_name, goods.goods_display, goods.goods_ability, 
+			goods.goods_memory, goods.goods_storage, goods.goods_battery, attr.attributes, goods.stock_cnt
+		from
+			(
+		    select
+				tg.goods_no, goods_name, goods_display, goods_ability, goods_memory, goods_storage, goods_battery, ts.stock_cnt
+			from
+				tgoods as tg, tstock as ts
+			where tg.goods_no = ts.goods_no
+		    ) as goods
+		left join 
+			(
+		    select
+				tag.goods_no, 
+		        group_concat(ta.attribute_value) as attributes
+			from
+				tattributegoods as tag  left join tattribute  as ta
+			on 
+				tag.attribute_id = ta.attribute_id
+		    group by 
+				goods_no
+			) as attr
+		on goods.goods_no = attr.goods_no
+]]>
+	<where>
+		<if test="no != null">
+		<![CDATA[
+			and goods.goods_no =  #{no}
+		]]>
+		</if>
+		<if test="name != null">
+		<![CDATA[
+			and goods.goods_name like CONCAT('%', #{name}, '%')
+		]]>
+		</if>
+	</where>
+	
     </select>
+    <resultMap type="jp.co.commerce21.entity.Goods" id="goods_list">
+        <id property="no" column="goods_no" />
+  		<result property="name" column="goods_name"/>
+  		<result property="display" column="goods_display"/>
+  		<result property="ability" column="goods_ability"/>
+  		<result property="memory" column="goods_memory"/>
+  		<result property="storage" column="goods_storage"/>
+  		<result property="battery" column="goods_battery"/>
+  		<result property="attributes" column="attributes"/>
+  		<result property="stock" column="stock_cnt"/>
+    </resultMap>
 </mapper>
