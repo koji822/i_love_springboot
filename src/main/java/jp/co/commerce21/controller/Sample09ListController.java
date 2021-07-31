@@ -9,7 +9,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import jp.co.commerce21.dto.GoodsDto;
-import jp.co.commerce21.form.SearchForm;
 import jp.co.commerce21.form.SearchGoodsForm;
 import jp.co.commerce21.service.GoodsService;
 
