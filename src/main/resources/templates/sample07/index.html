@@ -45,6 +45,7 @@
 			<p><strong>2. Security用Configクラスを作成</strong></p>
 			<p>抽象クラスとなるWebSecurityConfigurerAdapterを継承したWebSecurityConfigクラスを作成します。</p>
 			<p>Spring Security認証・認可の設定まわりをこのクラスで定義します。</p>
+			<p>configureAuthenticationManagerを定義することで、UserDetailsServiceが有効になります。</p>
 			<pre>
 				<code>
 package jp.co.commerce21.config;
@@ -166,9 +167,9 @@ public class LoginController {
 	@RequestMapping(value = "/success", method = RequestMethod.GET)
 	public String success(Authentication loginUser, Model model) {
 		// 認証情報を取得
-        model.addAttribute("username", loginUser.getName());
-        model.addAttribute("role", loginUser.getAuthorities());
-        return "redirect:/sample";
+		model.addAttribute("username", loginUser.getName());
+		model.addAttribute("role", loginUser.getAuthorities());
+		return "redirect:/sample";
 	}
 }
 	</code>
@@ -242,10 +243,10 @@ public class User {
 	private String password;
 	
 	@Column(nullable = false)
-    private boolean enabled;
+	private boolean enabled;
 	
 	@Column(nullable = false)
-    private boolean admin;	
+	private boolean admin;	
 }
 	</code>
 </pre><br/>
@@ -331,6 +332,8 @@ public class UserAccount implements UserDetails {
 </pre><br/>
 			
 <p><i>9. UserDetailsServiceインタフェースを実装します。</i></p>
+<p><i>よく見ると、usernameを受け取って、UserDetailsオブジェクトを返すだけで、passwordのチェックをしている部分がありません。 
+でも、これで良いのです。 パスワードのチェックはSpringSecurityにまかせる・・でOKです。</i></p>
 <pre>
 	<code>
 package jp.co.commerce21.service.impl;
@@ -352,13 +355,10 @@ import jp.co.commerce21.entity.User;
 import jp.co.commerce21.entity.UserAccount;
 
 @Service
-public class UserAccountService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
