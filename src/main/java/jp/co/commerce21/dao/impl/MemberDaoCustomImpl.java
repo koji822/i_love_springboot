@@ -37,7 +37,7 @@ public class MemberDaoCustomImpl implements MemberDaoCustom {
 	    
 	    // Text
 	    if (!MyStringUtils.isBlank(searchForm.getText())) {
-	    	sql.append("and input_text = :input_text ");
+	    	sql.append("and input_text like :input_text ");
 	    	textFlg = true;
 	    }
 	    
@@ -82,7 +82,7 @@ public class MemberDaoCustomImpl implements MemberDaoCustom {
 	    
 	    // Text
 	    if (!MyStringUtils.isBlank(searchForm.getText())) {
-	    	sql.append("and input_text = :input_text ");
+	    	sql.append("and input_text like :input_text ");
 	    	textFlg = true;
 	    }
 	    
