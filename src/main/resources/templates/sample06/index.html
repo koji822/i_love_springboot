@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Spring Boot Thymeleaf Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/github.min.css">
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+	<div th:replace="/common/common::header"></div>
+	<div class="container">				
+		<div class="starter-template">
+		
+	        <h1>Spring TEST</h1><br/>	        
+			<p><strong>1. Maven dependency</strong></p>
+			<p>pom.xmlに以下を追加します。</p>
+			
+			<pre>
+				<code>
+　　・
+　　・		
+&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+	&lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId>org.springframework.security&lt;/groupId&gt;
+    &lt;artifactId>spring-security-test&lt;/artifactId&gt;
+    &lt;scope>test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId>org.mockito&lt;/groupId&gt;
+    &lt;artifactId>mockito-all&lt;/artifactId&gt;
+    &lt;version>1.10.19&lt;/version&gt;
+    &lt;scope>test&lt;/scope&gt;
+&lt;/dependency&gt;
+　　・
+　　・
+				</code>
+			</pre><br/>
+
+			<p><strong>2. utilのテストクラスを作成</strong></p>
+			<pre>
+				<code>
+package jp.co.commerce21.util;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+class MyStringUtilsTest {
+	
+	@BeforeAll
+	static void setUp() {
+		// これを入れないとカバレッジ100%にならないからとりあえず入れる
+		new MyStringUtils();
+	}
+	
+	@Test
+	void setCsvStrNullテスト() {		
+		String actual = MyStringUtils.setCsvStr(null);
+		assertThat(actual).isEqualTo("\"\"");
+	}
+	
+	@Test
+	void setCsvStr空文字テスト() {
+		String actual = MyStringUtils.setCsvStr("");
+		assertThat(actual).isEqualTo("\"\"");	
+	}
+	
+	@Test
+	void setCsvStr半角文字列テスト() {
+		String actual = MyStringUtils.setCsvStr("abcde");
+		assertThat(actual).isEqualTo("\"abcde\"");
+	}
+
+	@Test
+	void setCsvStr全角文字列テスト() {
+		String actual = MyStringUtils.setCsvStr("あいうえお");
+		assertThat(actual).isEqualTo("\"あいうえお\"");
+	}
+	
+		・
+		・
+}
+				</code>
+			</pre><br/>
+
+			<p><strong>3. Controllerのテストクラスを作成</strong></p>
+			<p>前半は、MockMVCを利用するパターン</p>
+			<p>後半は、Mockitoを利用するパターンを記載します。</p>
+			<pre>
+				<code>
+package jp.co.commerce21.controller;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+class Sample09ListControllerTest {
+
+	@Autowired
+	MockMvc mockMvc;
+	
+	@Test
+	@WithMockUser(username="admin", roles="ADMIN")
+	void sample09ListControllerAdminUser () throws Exception {
+		
+		mockMvc.perform(get("/sample09/list"))
+			.andExpect(status().isOk())
+			.andExpect(model().hasNoErrors())
+			.andExpect(content().string(containsString("検索条件")))
+			.andExpect(view().name("sample09/list"));
+	}
+}
+				</code>
+			</pre><br/>
+
+<pre>
+				<code>
+package jp.co.commerce21.controller;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.ui.ModelMap;
+
+import jp.co.commerce21.dto.GoodsDto;
+import jp.co.commerce21.form.SearchGoodsForm;
+import jp.co.commerce21.service.GoodsService;
+
+@SpringBootTest
+class Sample09ListControllerMockitoTest {
+
+	@Mock
+	private GoodsService goodsService;
+	
+	@InjectMocks
+	private Sample09ListController sample09ListController;
+	
+	private SearchGoodsForm mockForm;
+	private List<GoodsDto> mockGoodsList;
+	
+	@BeforeEach
+	void setUp() {
+		mockForm = new SearchGoodsForm();
+		mockForm.setNo(1L);
+		mockForm.setName("MacBook");
+		
+		mockGoodsList = new ArrayList<GoodsDto>();	
+		GoodsDto mockGoods = new GoodsDto();
+		mockGoods.setGoodsNo(1L);
+		mockGoods.setName("test");
+		mockGoods.setDisplay("display");
+		mockGoods.setAbility("ability");
+		mockGoods.setMemory("memory");
+		mockGoods.setStorage("storage");
+		mockGoods.setBattery("battery");
+		mockGoods.setAttributes("attributes");
+		mockGoods.setStock("1");
+		mockGoodsList.add(mockGoods);
+		
+		when(goodsService.searchGoodsList(mockForm)).thenReturn(mockGoodsList);
+	}
+	
+	@Test
+	void sample09ListControllerMockitoTest () {
+		String response = sample09ListController.list(new ModelMap(), mockForm);
+        assertThat(response).isEqualTo("sample09/list");
+	}
+}
+				</code>
+			</pre><br/>
+
+			<p><strong>4. Serviceのテストクラスを作成</strong></p>
+			<p>Mockitoを利用するパターンを記載します。</p>
+			<pre>
+				<code>
+package jp.co.commerce21.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import jp.co.commerce21.dao.GoodsDao;
+import jp.co.commerce21.dto.GoodsDto;
+import jp.co.commerce21.entity.Goods;
+import jp.co.commerce21.form.SearchGoodsForm;
+import jp.co.commerce21.service.GoodsService;
+
+@SpringBootTest
+@Transactional
+class GoodsServiceImplTest {
+
+	@Mock
+	private GoodsDao goodsDao;
+	
+	@InjectMocks
+	private GoodsService goodsService = new GoodsServiceImpl();
+	
+	private SearchGoodsForm mockForm;
+	private List<Goods> mockGoodsList;
+	
+	@BeforeEach
+	void setUp() {
+		// Create Mock
+		mockForm = new SearchGoodsForm();
+		mockForm.setNo(1L);
+		mockForm.setName("MacBook");
+		mockGoodsList = new ArrayList<Goods>();	
+		Goods mockGoods = new Goods();
+		mockGoods.setNo(1L);
+		mockGoods.setName("test");
+		mockGoods.setDisplay("display");
+		mockGoods.setAbility("ability");
+		mockGoods.setMemory("memory");
+		mockGoods.setStorage("storage");
+		mockGoods.setBattery("battery");
+		mockGoods.setAttributes("attributes");
+		mockGoods.setStock("1");
+		mockGoodsList.add(mockGoods);
+		
+		when(goodsDao.searchGoods(mockForm)).thenReturn(mockGoodsList);
+	}
+	
+	@Test
+	void searchGoodsListTest() {		
+		// serviceを実行
+		List<GoodsDto> goodsList = goodsService.searchGoodsList(mockForm);
+		String actual = goodsList.get(0).getName();
+		
+		// 判定
+		assertThat(actual).isEqualTo("test");	
+	}
+}
+				</code>
+			</pre><br/>
+
+			<p><strong>5. Daoのテストクラスを作成</strong></p>
+			<p>Mockitoを利用するパターンを記載します。</p>
+			<pre>
+				<code>
+
+				</code>
+			</pre><br/>
+			
+		</div>
+	</div><!-- /.container -->
+</body>
+</html>
