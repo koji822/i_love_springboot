@@ -274,10 +274,60 @@ class GoodsServiceImplTest {
 			</pre><br/>
 
 			<p><strong>5. Daoのテストクラスを作成</strong></p>
-			<p>Mockitoを利用するパターンを記載します。</p>
+			<p>開発環境のDBのデータを利用しているため、データを書き換えるとテストケースがエラーになる。</p>
+			<p>★初期処理の中でテストデータを作成し、そのデータで試験するようにしたいが、やり方が不明のため、わかったら修正する。</p>
 			<pre>
 				<code>
+package jp.co.commerce21.dao;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import jp.co.commerce21.entity.Member;
+import jp.co.commerce21.form.SearchForm;
+
+@SpringBootTest
+@Transactional
+class MemberDaoCustomImplTest {
+
+	@Autowired
+	private MemberDaoCustom memberDaoCustom;
+	
+	@Test
+	void searchMemberCountTestパラメータ有 () {
+		// テストデータ
+		SearchForm searchForm = new SearchForm();
+		searchForm.setId(1L);
+		searchForm.setText("text");
+		searchForm.setEmail("test@example.com");
+		
+		// テストデータで対象のメソッドを実行
+		int actual = memberDaoCustom.searchMemberCount(searchForm);
+		
+		// 判定
+		assertThat(actual).isEqualTo(1);	
+	}
+	
+	@Test
+	void searchMemberCountTestパラメータ無 () {
+		// テストデータ
+		SearchForm searchForm = new SearchForm();
+		
+		// テストデータで対象のメソッドを実行
+		int actual = memberDaoCustom.searchMemberCount(searchForm);
+		
+		// 判定
+		assertThat(actual).isEqualTo(1);		
+	}
+		・
+		・
+}
 				</code>
 			</pre><br/>
 			
