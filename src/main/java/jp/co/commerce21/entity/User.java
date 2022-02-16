@@ -7,11 +7,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name="tuser")
 public class User {
@@ -40,6 +38,5 @@ public class User {
 	
 	@Column(nullable = false)
     private boolean admin;
-	
 }
 

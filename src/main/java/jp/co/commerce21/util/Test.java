@@ -12,7 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class Test {
 	public static void main(String[] args) {
 		// エンコードされたパスワードを出力
-		System.out.println(encode("password1111"));     
+		System.out.println(encode("password1111"));
+		
 	}
 	
 	private static String encode(String password) {
