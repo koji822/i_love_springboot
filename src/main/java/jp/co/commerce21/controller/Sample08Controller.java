@@ -29,7 +29,7 @@ public class Sample08Controller {
 
         // タイトル
         model.addAttribute("title", "本屋さん");
-
+        
         // bookform（formクラス）がnullでなければ1件検索
         if (bookForm.getId() != null) {
             Book book = bookService.findById(bookForm.getId());

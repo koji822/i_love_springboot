@@ -135,7 +135,8 @@ public class MemberServiceImpl implements MemberService {
 	
 	@Override
 	public Member findById(Long id) {
-		return memberDao.getOne(id);
+		return memberDao.getById(id);
+//		return memberDao.getOne(id);
 //		return memberDao.findOne(id);
 	}
 	

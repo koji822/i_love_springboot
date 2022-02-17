@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>2.5.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -20,11 +20,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
+		<java.version>17</java.version>
 		<thymeleaf.version>3.0.12.RELEASE</thymeleaf.version>
         <thymeleaf-layout-dialect.version>2.5.0</thymeleaf-layout-dialect.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-    	<maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+    	<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<repositories>
@@ -139,10 +139,7 @@
 		    <version>1.10.19</version>
 		    <scope>test</scope>
 		</dependency>
-		
-		
-
-		
+	
 	</dependencies><!--$NO-MVN-MAN-VER$-->
 
 	<build>

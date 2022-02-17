@@ -18,6 +18,7 @@ public class AccessMonitor {
 //		String cn = jp.getTarget().getClass().getSimpleName();
 //		String mn = jp.getSignature().getName();	
 //		logger.info("##  @Before " + cn + "." + mn + " ##");
+	
 		log.info("#### メソッド開始:" + jp.getSignature());
 	}
 	
