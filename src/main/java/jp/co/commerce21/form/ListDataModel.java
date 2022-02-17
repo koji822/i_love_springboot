@@ -6,6 +6,7 @@ import lombok.Data;
 public class ListDataModel {
 
 	private String label;
+	
 	private String data;
 	
 	public ListDataModel(String _label, String _data) {

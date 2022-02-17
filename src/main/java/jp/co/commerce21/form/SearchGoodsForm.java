@@ -14,7 +14,5 @@ public class SearchGoodsForm {
 			name = null;
 		}
 		this.name = name;
-	}
-	
-	
+	}	
 }
