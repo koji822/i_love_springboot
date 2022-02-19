@@ -11,12 +11,15 @@
 <script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
+	<div id="title" />
 	<div th:replace="/common/common::header"></div>
-	<div class="container">				
+	<div class="container" >				
 		<div class="starter-template">
 		
-	        <h1>Spring Batch</h1><br/>	        
-			<p><strong>1. @EnableSchedulingアノテーション</strong></p>
+	        <h1>Spring Batch</h1><br/>
+	        
+	        <p><h3>1. Spring bootでTaskを定期実行する</h3></p>  
+			<p><strong>1-1. @EnableSchedulingアノテーション</strong></p>
 			<p>スケジュールを有効にするために@EnableSchedulingアノテーションを追加します。</p>
 					
 			<pre>
@@ -39,7 +42,7 @@ public class SpringBootApp01Application {
 			</pre>
 			<br/>
 
-			<p><strong>2. @Scheduledアノテーション</strong></p>
+			<p><strong>1-2. @Scheduledアノテーション</strong></p>
 			<p>実行クラスを作成し、@Scheduledアノテーションを指定します。</p>
 			<pre>
 				<code>
@@ -91,9 +94,8 @@ public class Sample04BatchController {
 			</pre>
 			<br/>
 
-			<p><strong>3. application.properties</strong></p>
-			<p>cronで${設定名}と指定した場合、application.propertiesに設定します。</p>
-			
+			<p><strong>1-3. application.properties</strong></p>
+			<p>cronで${設定名}と指定した場合、application.propertiesに設定します。</p>			
 			<pre>
 				<code>
 ## scheduler
@@ -101,6 +103,306 @@ scheduler.cron=0 10 * * * *
 				</code>
 			</pre>
 			
+			<br/><br/>
+			<p><h3>2. SpringBatchを用いてバッチ処理を実装する</h3></p>  
+			<p><strong>2-1. SpringBatchとは</strong></p>
+			<p>Springを使ってバッチ開発を効率化することができるフレームワーク。</p>
+			<p>例えば、DI、バリデーション、DBアクセスなどの機能など使え、他にもバッチ開発でよく使う機能として、ファイルやDBの読み込み、書き込みなどがあります。</p>		
+			<br/>
+			
+			<p><strong>2-2. SpringBatchの概念</strong></p>
+			<p>ここでは最低限、知っていたほうがよい内容を記載します。詳細は<strong><a href="https://spring.pleiades.io/spring-batch/docs/current/reference/html/" target="_blank">公式リファレンス</a></strong>を参照してください。</p>
+			<br/>
+			<p>≪SpringBatchの内部構造≫</p>
+			<p>SpringBatchで開発するためには、内部構造について理解しておく必要があります。</p>
+			<img src="/img/batch01.jpg" alt="バッチ概念" title="バッチ概念" />
+			
+			<p><strong>・JobRepository・・・</strong></p>
+			<p>　　バッチの実行結果などをDBに保存してくれる機能。例えばバッチに渡したパラメータ、バッチで処理した件数、バッチのステータスなどをJobRepositoryがDBに保存します。DBに保存しないように設定することもできます。</p>
+			<br/>
+			<p><strong>・JobLauncher・・・</strong></p>
+			<p>　　Jobを実行するエントリーポイントとなるインタフェースです。Jobの実行はrunメソッドを呼び出すことで行われます。runメソッドは実行するJobとJobParameterを受け取ります。</p>
+			<br/>
+			<p><strong>・Job・・・</strong></p>
+			<p>　　Spring Batchで一番大本にある要素でバッチ処理全体を表します。1Job = 1バッチ処理と考えて問題ない。Jobは複数のStepから構成され、1つのJobを実行するとそれを構成する複数のStepが実行されます。</p>
+			<br/>
+			<p><strong>・Step・・・</strong></p>
+			<p>　　バッチ処理を構成する最小単位の要素。Stepは大きく2種類のモデルに分類されます。</p>
+
+			<p>　　・Chunkモデル</p>
+			<p>　　　　読み込み(ItemReader)、加工(ItemProcessor)、書き込み(ItemWriter)によって構成されるステップモデル。読み込み、加工、書き込みの順でStepが構成され、必ずそれぞれの処理が実行されます（例えば読み込み、加工だけを行うようなStepにはできない）。実装者はそれぞれの処理内容を記述する必要があります。予めSpring Batch側でインタフェースが提供されているので、実装者はそれを実装してそれぞれの処理内容を書いていきます。</p>
+			<p>　　・Taskletモデル</p>
+			<p>　　　　Chunkモデルとは違い、特に処理の流れが決まっておらず、自由に処理を記述できるステップモデル。何か単一処理を行う場合はこちらを利用します。こちらもSpring Batch側でインタフェースが提供されているので、実装者はインタフェースを実装して処理内容を書いていきます。</p>
+			<br/>
+			<p><strong>・JobParameter・・・</strong></p>
+			<p>　　Job実行時に渡すパラメータ。ここで渡したパラメータをJobやStepの変数として利用できます。</p>
+			<br/>
+			
+			<p><strong>2-3. Taskletで簡単なバッチアプリケーションを作成する</strong></p>
+			<p><strong>2-3-1. Maven dependency</strong></p>
+			<pre>
+				<code>
+　　・
+　　・		
+&lt;dependency&gt;
+	&lt;groupId>org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId>spring-boot-starter-batch&lt;/artifactId&gt;
+&lt;/dependency&gt;
+　　・
+　　・
+				</code>
+			</pre><br/>
+			
+			<p><strong>2-3-2. Taskletの作成</strong></p>
+			<p>まずStepの実処理となるTaskletを実装していきます。（Taskletモデルを実装しています）以下は「Hello, World!」を表示するだけのTaskletです。</p>
+			<pre>
+				<code>
+package com.example.demo.tasklet;
+
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@StepScope
+@Slf4j
+public class HelloTasklet implements Tasklet {
+
+    @Override
+    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        log.info("Hello World");
+        return RepeatStatus.FINISHED;
+    }
+}
+				</code>
+			</pre><br/>
+			
+			<p><strong>2-3-3. BatchConfigの作成</strong></p>
+			<p>次にバッチ設定クラスを作成します。このクラスでJobやStepお設定を行います。</p>
+			<pre>
+				<code>
+package com.example.demo.config;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableBatchProcessing
+public class BatchConfig {
+
+    /** JobBuilderのFactoryクラス */
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
+
+    /** StepBuilderのFactoryクラス */
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    /** HelloTasklet */
+    @Autowired
+    private Tasklet helloTasklet;
+
+    /** TaskletのStepを生成 */
+    @Bean
+    public Step taskletStep1() {
+        return stepBuilderFactory.get("HelloTaskletStep1") // Builderの取得
+            .tasklet(helloTasklet) // Taskletのセット
+            .build(); // Stepの生成
+    }
+
+    /** Jobを生成 */
+    @Bean
+    public Job taskletJob() throws Exception {
+        return jobBuilderFactory.get("HelloWorldTaskletJob") // Builderの取得
+            .incrementer(new RunIdIncrementer()) // IDのインクリメント
+            .start(taskletStep1()) // 最初のStep
+            .build(); // Jobの生成
+    }
+}
+				</code>
+			</pre><br/>
+			
+			<p><strong>2-4. Chunkで簡単なバッチアプリケーションを作成する</strong></p>
+			<p><strong>2-4-1. Maven dependency</strong></p>
+			<p>上記と同様</p><br/>
+			
+			<p><strong>2-4-2. Chunkの作成</strong></p>
+			<p>まずChunkの中のReaderを作成します。ここで作成するReaderは、配列内の文字列を順番に読み込み取ります。</p>
+			<pre>
+				<code>
+package com.example.demo.chunk;
+
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.NonTransientResourceException;
+import org.springframework.batch.item.ParseException;
+import org.springframework.batch.item.UnexpectedInputException;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@StepScope
+@Slf4j
+public class HelloReader implements ItemReader<String> {
+
+    // 出力用文字列
+    private String[] input = {"Hello", "World", "hoge", "fuga", null, "The World"};
+    private int index = 0;
+
+    @Override
+    public String read() throws Exception, UnexpectedInputException, ParseException,
+            NonTransientResourceException {
+
+        // 配列の文字列を取得
+        String message = input[index++];
+        log.info("Read:{}", message);
+
+        return message;
+    }
+}
+				</code>
+			</pre><br/>
+			
+			<p>次にProcessorを作ります。Readerから渡された文字列を加工します。</p>
+			<pre>
+				<code>
+package com.example.demo.chunk;
+
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@StepScope
+@Slf4j
+public class HelloProcessor implements ItemProcessor<String, String> {
+
+    @Override
+    public String process(String item) throws Exception {
+        // 文字列の加工
+        item = item + "★";
+        log.info("Processor:{}", item);
+        return item;
+    }
+}
+				</code>
+			</pre><br/>
+			
+			<p>次にWriterを作ります。Processorから渡された値をログに出力します。</p>
+			<pre>
+				<code>
+package com.example.demo.chunk;
+
+import java.util.List;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@StepScope
+@Slf4j
+public class HelloWriter implements ItemWriter<String> {
+
+    @Override
+    public void write(List<? extends String> items) throws Exception {
+        log.info("writer: {}", items);
+        log.info("============");
+    }
+}
+				</code>
+			</pre><br/>
+			
+			
+			<p><strong>2-4-3. BatchConfigの作成</strong></p>
+			<p>最後にバッチ設定クラスを作成します。</p>
+			<pre>
+				<code>
+package com.example.demo.config;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableBatchProcessing
+public class BatchConfig {
+
+    /** JobBuilderのFactoryクラス */
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
+
+    /** StepBuilderのFactoryクラス */
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    /** HelloReader */
+    @Autowired
+    private ItemReader<String> reader;
+
+    /** HelloProcessor */
+    @Autowired
+    private ItemProcessor<String, String> processor;
+
+    /** HelloWriter */
+    @Autowired
+    private ItemWriter<String> writer;
+
+    /** ChunkのStepを生成 */
+    @Bean
+    public Step chunkStep() {
+        return stepBuilderFactory.get("HelloChunkStep") // Builderの取得
+            .<String, String>chunk(1) // チャンクの設定
+            .reader(reader) // readerセット
+            .processor(processor) // processorセット
+            .writer(writer) // writerセット
+            .build(); // Stepの生成
+    }
+
+    /** Jobを生成 */
+    @Bean
+    public Job chunkJob() throws Exception {
+        return jobBuilderFactory.get("HelloWorldChunkJob") // Builderの取得
+            .incrementer(new RunIdIncrementer()) // IDのインクリメント
+            .start(chunkStep()) // 最初のStep
+            .build(); // Jobの生成
+    }
+}
+				</code>
+			</pre><br/>
+			
+			<p>ここでは初歩的なコードを紹介しましたが、SpringBatchはこの他、下記のようなさまざまな機能、実装方法法が用意されてます。</p>
+			<p>・Listener</p>
+			<p>・Step間でのパラメータの受け渡し、バッチ起動側からのパラメータ受け取り、パラメータのバリデーションチェック、コマンドラインからのバッチ実行</p>
+			<p>・プロパティファイル</p>
+			<p>・制御（スキップ、リトライ、分岐）</p>
+			<p>・性能（並行、並列処理）</p>
+			<p>・バッチのユニットテスト（Junit）</p>
+			<p>★詳細は、『Spring解体新書Batch編』<strong><a href="https://github.com/TatsuyaTamura/SpringBatchJP" target="_blank">『Github』</a></strong><strong><a href="https://app.box.com/s/9tmx756lo850mkikm6wc0hujr2sjfhpz/folder/143007303287" target="_blank">『Spring解体新書Batch編（購入特典）』</a></strong>を参照</p>
+			<br/><br/>
+			<p style="text-align: right"><a href="#title">TOPへ</a></p>
 		</div>
 	</div><!-- /.container -->
 </body>
