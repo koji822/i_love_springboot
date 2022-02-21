@@ -27,9 +27,4 @@ public class LoginController {
         model.addAttribute("role", loginUser.getAuthorities());
         return "redirect:/sample";
 	}
-	
-	@RequestMapping(value = "/logout", method = RequestMethod.GET)
-	public String logout(Map<String, Object> model) {
-		 return "redirect:/login";
-	}
 }
