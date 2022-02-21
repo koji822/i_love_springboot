@@ -1,0 +1,15 @@
+@charset "UTF-8";
+
+html {
+	height: 80%;
+	margin: 0 auto;
+	padding: 0;
+	display: table;
+}
+body {
+	min-height: 100%;
+	margin: 0 auto;
+	padding: 0;
+	display: table-cell;
+	vertical-align: middle;
+}

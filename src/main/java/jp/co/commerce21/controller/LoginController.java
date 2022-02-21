@@ -17,13 +17,6 @@ public class LoginController {
 	
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public String login(Map<String, Object> model) {
-		 model.put("iserror", false);
-		 return "login";
-	}
-	
-	@RequestMapping(value = "/login-error", method = RequestMethod.GET)
-	public String loginError(Map<String, Object> model) {
-		 model.put("iserror", true);
 		 return "login";
 	}
 	
@@ -33,5 +26,10 @@ public class LoginController {
         model.addAttribute("username", loginUser.getName());
         model.addAttribute("role", loginUser.getAuthorities());
         return "redirect:/sample";
+	}
+	
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	public String logout(Map<String, Object> model) {
+		 return "redirect:/login";
 	}
 }

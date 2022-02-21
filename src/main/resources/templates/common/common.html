@@ -10,32 +10,36 @@
 			<div class="navbar-header">
 				<a class="navbar-brand">Spring Boot</a>
 			</div>
-			<div id="navbar" class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-					<li><a href="/sample"><span class="glyphicon glyphicon-home"></span>　Home</a></li>
-					<li class="dropdown">
-	           			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
-	           			<ul class="dropdown-menu">
-							<li><a href="/sample01/input">1. 新規登録（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
-	           				<li><a href="/sample02/list">2. 検索・編集・削除（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
-	           				<li><a href="/sample03/index">3. ダウンロード・アップロード機能（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
-	           				<li><a href="/sample04/index">4. バッチ処理（Spring Batch）</a></li>
-	           				<li><a href="/sample05/index">5. API処理（Spring REST API）</a></li>
-	           				<li><a href="/sample06/index">6. 単体テスト（Spring Test）</a></li>
-	           				<li><a href="/sample07/index">7. 認証・認可機能（Spring Security）</a></li>
-	           				<li><a href="/sample08/book">8. MyBatis</a></li>
-	           			</ul>
-	         		</li>
-	         		<li><a><span class="glyphicon glyphicon-user" th:text="${#authentication.principal.Username}"></a></li>
-	         		<th:block th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
-	         			<li><a><span class="glyphicon glyphicon-pencil">Administrator</a></li>
-	         		</th:block>
-	         		<th:block th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
-	         			<li><a><span class="glyphicon glyphicon-pencil">General</a></li>
-	         		</th:block>
-	         		<li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span>　Logout</a></li>
-				</ul>
-			</div>
+			<form name="logout" action="/logout" th:action="@{/logout}" method="post">
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="/sample" th:href="@{/sample}"><span class="glyphicon glyphicon-home"></span>　Home</a></li>
+						<li class="dropdown">
+		           			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
+		           			<ul class="dropdown-menu">
+								<li><a href="/sample01/input" th:href="@{/sample01/input}">1. 新規登録（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
+		           				<li><a href="/sample02/list" th:href="@{/sample02/list}">2. 検索・編集・削除（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
+		           				<li><a href="/sample03/index" th:href="@{/sample03/index}">3. ダウンロード・アップロード機能（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
+		           				<li><a href="/sample04/index" th:href="@{/sample04/index}">4. バッチ処理（Spring Batch）</a></li>
+		           				<li><a href="/sample05/index" th:href="@{/sample05/index}">5. API処理（Spring REST API）</a></li>
+		           				<li><a href="/sample06/index" th:href="@{/sample06/index}">6. 単体テスト（Spring Test）</a></li>
+		           				<li><a href="/sample07/index" th:href="@{/sample07/index}">7. 認証・認可機能（Spring Security）</a></li>
+		           				<li><a href="/sample08/book" th:href="@{/sample08/book}">8. MyBatis</a></li>
+		           			</ul>
+		         		</li>
+		         		<li><a><span class="glyphicon glyphicon-user" th:text="${#authentication.principal.Username}"></a></li>
+		         		<th:block th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+		         			<li><a><span class="glyphicon glyphicon-pencil">Administrator</a></li>
+		         		</th:block>
+		         		<th:block th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+		         			<li><a><span class="glyphicon glyphicon-pencil">General</a></li>
+		         		</th:block>	         		
+		         		<li>	      				
+		      				<a href="javascript:logout.submit()"><span class="glyphicon glyphicon-log-out"></span>　Logout</a>							
+		         		</li>	         		
+					</ul>
+				</div>
+			</form>
 		</div>
 	</nav>
 	<!-- header end -->
