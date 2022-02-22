@@ -13,14 +13,6 @@ import lombok.Data;
 @Entity
 @Table(name="tuser")
 public class User {
-
-//	public User(String username, String password, boolean isAdmin){
-//		setUserId(0L);
-//		setUsername(username);
-//		setPassword(password);
-//		setEnabled(true);
-//		setAdmin(isAdmin);
-//	}
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import jp.co.commerce21.validation.UniqueEmail;
 import lombok.Data;
 
 @Data

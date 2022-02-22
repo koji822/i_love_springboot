@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import jp.co.commerce21.validation.UniqueEmail;
 import lombok.Data;
 
 @Data
@@ -26,6 +27,7 @@ public class MemberForm {
 	
 	@NotEmpty
 	@Email
+	@UniqueEmail
 	private String emailText;
 	
 	@NotEmpty
