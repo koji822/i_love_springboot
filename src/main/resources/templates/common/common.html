@@ -17,7 +17,7 @@
 						<li class="dropdown">
 		           			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
 		           			<ul class="dropdown-menu">
-								<li><a href="/sample01/input" th:href="@{/sample01/input}">1. 新規登録（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
+								<li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/sample01/input" th:href="@{/sample01/input}">1. 新規登録（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
 		           				<li><a href="/sample02/list" th:href="@{/sample02/list}">2. 検索・編集・削除（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
 		           				<li><a href="/sample03/index" th:href="@{/sample03/index}">3. ダウンロード・アップロード機能（Spring MVC/Spring Data JPA/Thymeleaf）</a></li>
 		           				<li><a href="/sample04/index" th:href="@{/sample04/index}">4. バッチ処理（Spring Batch）</a></li>
