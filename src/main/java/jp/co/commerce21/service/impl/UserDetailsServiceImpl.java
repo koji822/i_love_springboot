@@ -28,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// usernameの値チェック
 		if (StringUtils.isEmpty(username)) {
-			throw new UsernameNotFoundException("Username is empty");
+			throw new UsernameNotFoundException("Username is empty: " + username);
 		}
 
 		// usernameの取得
